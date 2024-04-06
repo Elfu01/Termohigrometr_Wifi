@@ -1,9 +1,12 @@
 #include <stdio.h>
+#include <math.h>
+
 #include "pico/stdlib.h"
-#include "am2320.h"
 #include "hardware/gpio.h"
 #include "hardware/i2c.h"
 #include "pico/binary_info.h"
+
+#include "am2320.h"
 
 
 
@@ -31,8 +34,6 @@ void init()
     i2c_init(i2c0, 100 * 1000);
     gpio_set_function(16, GPIO_FUNC_I2C);
     gpio_set_function(17, GPIO_FUNC_I2C);
-    // gpio_pull_up(0);
-    // gpio_pull_up(1);
         // Make the I2C pins available to picotool
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
 }
@@ -63,4 +64,9 @@ void sensor(float *temp, float *hum)
         else *temp = *temp / 10.0;
 	}
 
+}
+
+float dew_piont(float hum, float temp)
+{
+  return pow(hum / 100.0, 1.0 / 8.0) * (112.0 + (0.9 * temp)) + (0.1 * temp) - 112.0;
 }

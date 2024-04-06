@@ -26,6 +26,7 @@
   "files.associations": {
     "*.embeddedhtml": "html",
     "stdio.h": "c",
-    "stdlib.h": "c"
+    "stdlib.h": "c",
+    "cgi.h": "c"
   }
 }
