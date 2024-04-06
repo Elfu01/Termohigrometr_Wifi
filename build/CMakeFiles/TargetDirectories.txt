@@ -1,4 +1,4 @@
-C:/Users/wionz/Documents/Pico-v1.5.1/Termohigrometr_Wifi/build/CMakeFiles/main.dir
+C:/Users/wionz/Documents/Pico-v1.5.1/Termohigrometr_Wifi/build/CMakeFiles/termohigrometr.dir
 C:/Users/wionz/Documents/Pico-v1.5.1/Termohigrometr_Wifi/build/CMakeFiles/edit_cache.dir
 C:/Users/wionz/Documents/Pico-v1.5.1/Termohigrometr_Wifi/build/CMakeFiles/rebuild_cache.dir
 C:/Users/wionz/Documents/Pico-v1.5.1/Termohigrometr_Wifi/build/pico-sdk/CMakeFiles/edit_cache.dir

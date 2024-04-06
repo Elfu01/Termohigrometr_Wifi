@@ -48,9 +48,11 @@ void sensor(float *temp, float *hum)
 	data_t[2]=0x04;
     
     i2c_write_blocking(i2c0, 0x5C, NULL, 1, false);
-    sleep_us(800);
+    //sleep_us(800);
+    busy_wait_us(800);
     i2c_write_blocking(i2c0, 0x5C, data_t, 3, false); //b8
-    sleep_us(1500);
+    //sleep_us(1500);
+    busy_wait_us(1500);
     i2c_read_blocking(i2c0, 0x5C, buf, 8, false);//b9
 
 
@@ -66,7 +68,38 @@ void sensor(float *temp, float *hum)
 
 }
 
-float dew_piont(float hum, float temp)
+float dew_piont(float temp, float hum)
 {
   return pow(hum / 100.0, 1.0 / 8.0) * (112.0 + (0.9 * temp)) + (0.1 * temp) - 112.0;
 }
+
+
+// void sensor(float *temp, float *hum)
+// {
+//     uint8_t data_t[3];
+// 	uint8_t buf[8];
+
+// 	data_t[0]=0x03;
+// 	data_t[1]=0x00;
+// 	data_t[2]=0x04;
+    
+//     i2c_write_blocking(i2c0, 0x5C, NULL, 1, false);
+//     //sleep_us(800);
+//     busy_wait_us(800);
+//     i2c_write_blocking(i2c0, 0x5C, data_t, 3, false); //b8
+//     //sleep_us(1500);
+//     busy_wait_us(1500);
+//     i2c_read_blocking(i2c0, 0x5C, buf, 8, false);//b9
+
+
+//     if ((buf[7] << 8) + buf[6] == CRC16(buf, 6)) 
+//     {
+// 		*hum = (buf[2] << 8) + buf[3];
+// 		*hum = *hum / 10.0;
+
+//         *temp = ((buf[4] & 0x7F) << 8) + buf[5];
+//         if((buf[4] & 0x80) == 0x80) *temp = *temp / (-10.0);
+//         else *temp = *temp / 10.0;
+// 	}
+
+// }
