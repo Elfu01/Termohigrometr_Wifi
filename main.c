@@ -13,10 +13,11 @@ int main()
     stdio_init_all();
     float temp, hum, dewPoint;
     init();
+    sensor(&temp, &hum, 1); //musi być wykonane przed webserver_connect() bo inaczej strona chyba jebnie
     webserver_connect();
     while(1)
-    {   
-        sensor(&temp, &hum);
+    {   ;
+        sensor(&temp, &hum, 1);
         dewPoint = dew_piont(temp, hum);
 
         printf("hum: %f\n", hum);

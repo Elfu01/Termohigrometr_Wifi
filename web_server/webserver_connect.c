@@ -10,7 +10,6 @@ const char WIFI_SSID[] = "";
 const char WIFI_PASSWORD[] = "";
 
 void webserver_connect() {
-    //stdio_init_all();
 
     cyw43_arch_init();
 

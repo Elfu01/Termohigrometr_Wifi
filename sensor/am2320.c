@@ -38,34 +38,45 @@ void init()
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
 }
 
-void sensor(float *temp, float *hum)
+void sensor(float *temp, float *hum, bool read)
 {
-    uint8_t data_t[3];
+  static float temperature, humiditi;
+  
+  if(!read)
+  {
+    *temp = temperature;
+    *hum = humiditi;
+    return;
+  }
+
+  uint8_t data_t[3];
 	uint8_t buf[8];
+
+  
 
 	data_t[0]=0x03;
 	data_t[1]=0x00;
 	data_t[2]=0x04;
     
-    i2c_write_blocking(i2c0, 0x5C, NULL, 1, false);
-    //sleep_us(800);
-    busy_wait_us(800);
-    i2c_write_blocking(i2c0, 0x5C, data_t, 3, false); //b8
-    //sleep_us(1500);
-    busy_wait_us(1500);
-    i2c_read_blocking(i2c0, 0x5C, buf, 8, false);//b9
+  i2c_write_blocking(i2c0, 0x5C, NULL, 1, false);
+  busy_wait_us(800);
+  i2c_write_blocking(i2c0, 0x5C, data_t, 3, false); //b8
+  busy_wait_us(1500);
+  i2c_read_blocking(i2c0, 0x5C, buf, 8, false);//b9
 
 
-    if ((buf[7] << 8) + buf[6] == CRC16(buf, 6)) 
-    {
-		*hum = (buf[2] << 8) + buf[3];
+  if ((buf[7] << 8) + buf[6] == CRC16(buf, 6)) 
+  {
+	  *hum = (buf[2] << 8) + buf[3];
 		*hum = *hum / 10.0;
 
-        *temp = ((buf[4] & 0x7F) << 8) + buf[5];
-        if((buf[4] & 0x80) == 0x80) *temp = *temp / (-10.0);
-        else *temp = *temp / 10.0;
-	}
+    *temp = ((buf[4] & 0x7F) << 8) + buf[5];
+    if((buf[4] & 0x80) == 0x80) *temp = *temp / (-10.0);
+    else *temp = *temp / 10.0;
 
+    temperature = *temp;
+    humiditi = *hum;
+	}
 }
 
 float dew_piont(float temp, float hum)
@@ -74,32 +85,3 @@ float dew_piont(float temp, float hum)
 }
 
 
-// void sensor(float *temp, float *hum)
-// {
-//     uint8_t data_t[3];
-// 	uint8_t buf[8];
-
-// 	data_t[0]=0x03;
-// 	data_t[1]=0x00;
-// 	data_t[2]=0x04;
-    
-//     i2c_write_blocking(i2c0, 0x5C, NULL, 1, false);
-//     //sleep_us(800);
-//     busy_wait_us(800);
-//     i2c_write_blocking(i2c0, 0x5C, data_t, 3, false); //b8
-//     //sleep_us(1500);
-//     busy_wait_us(1500);
-//     i2c_read_blocking(i2c0, 0x5C, buf, 8, false);//b9
-
-
-//     if ((buf[7] << 8) + buf[6] == CRC16(buf, 6)) 
-//     {
-// 		*hum = (buf[2] << 8) + buf[3];
-// 		*hum = *hum / 10.0;
-
-//         *temp = ((buf[4] & 0x7F) << 8) + buf[5];
-//         if((buf[4] & 0x80) == 0x80) *temp = *temp / (-10.0);
-//         else *temp = *temp / 10.0;
-// 	}
-
-// }
