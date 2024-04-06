@@ -1,0 +1,1 @@
+Termometr kurde faja
