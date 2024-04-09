@@ -9,6 +9,19 @@
 #include "am2320.h"
 
 
+struct data
+{
+  float max_temp;
+  float min_temp;
+  float max_hum;
+  float min_hum;
+  float avg_temp;
+  float avg_hum;
+  long int counter;
+  float temp_sum;
+  float hum_sum;
+};
+
 
 unsigned int CRC16(uint8_t *ptr, uint8_t length)
 {
@@ -41,6 +54,8 @@ void init()
 void sensor(float *temp, float *hum, bool read)
 {
   static float temperature, humiditi;
+
+  struct data data1;
   
   if(!read)
   {
@@ -76,6 +91,7 @@ void sensor(float *temp, float *hum, bool read)
 
     temperature = *temp;
     humiditi = *hum;
+
 	}
 }
 
@@ -84,4 +100,90 @@ float dew_piont(float temp, float hum)
   return pow(hum / 100.0, 1.0 / 8.0) * (112.0 + (0.9 * temp)) + (0.1 * temp) - 112.0;
 }
 
+float avg_temp(float temp)
+{
+  static float sum = 0;
+  static int count = 0;
+  sum = sum + temp;
+  count++;
+  return sum/count;
 
+}
+
+float avg_hum(float hum)
+{
+  static float sum = 0;
+  static int count = 0;
+  sum = sum + hum;
+  count++;
+  return sum/count;
+
+}
+
+void get_data(struct data *data1, float temp, float hum)
+{
+  struct data data_t;
+
+  data_t = *data1;
+
+  data_t.temp_sum += temp;  
+  data_t.hum_sum += hum;  
+
+  data_t.avg_temp = data_t.temp_sum / data_t.counter;
+  data_t.avg_hum = data_t.hum_sum / data_t.counter;
+
+  data_t.counter = data_t.counter + 1;
+
+  if(data_t.counter == 2)
+  {
+    data_t.max_temp = temp;
+    data_t.min_temp = temp;
+    data_t.max_hum = hum;
+    data_t.min_hum = hum;
+
+    *data1 = data_t;
+
+    return;
+  }
+
+  if(temp > data_t.max_temp)
+    data_t.max_temp = temp;
+
+  if(temp < data_t.min_temp)
+    data_t.min_temp = temp;
+
+  if(hum > data_t.max_hum)
+    data_t.max_hum = hum;
+
+  if(hum < data_t.min_hum)
+    data_t.min_hum = hum;
+
+  *data1 = data_t;
+}
+
+float units(float temp, uint8_t unit)
+{ 
+  switch(unit)
+  {
+    case 0: //C
+      return temp;
+    case 1: //F
+      return temp * 9 / 5 + 32;
+    case 2: //K
+      return temp + 273,15;
+    default:
+      return temp;
+  }
+
+
+
+
+
+
+
+  if(unit) //fahrenheit
+    return temp * 9 / 5 + 32;
+  
+  else //kelwin
+    return temp + 273,15;
+}
