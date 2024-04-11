@@ -37,7 +37,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
 
     case 3: // dew
       sensor(&temp, &hum, 0);
-      dew = dew_piont(temp, hum);
+      dew = dew_point(temp, hum);
       printed = snprintf(pcInsert, iInsertLen, "%f", dew);
     break;
 

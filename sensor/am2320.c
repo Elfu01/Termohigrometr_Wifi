@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <math.h>
+#include <time.h>
 
 #include "pico/stdlib.h"
 #include "hardware/gpio.h"
@@ -45,10 +46,20 @@ unsigned int CRC16(uint8_t *ptr, uint8_t length)
 void init()
 {
     i2c_init(i2c0, 100 * 1000);
-    gpio_set_function(16, GPIO_FUNC_I2C);
-    gpio_set_function(17, GPIO_FUNC_I2C);
+    gpio_set_function(SDA, GPIO_FUNC_I2C);
+    gpio_set_function(SCL, GPIO_FUNC_I2C);
         // Make the I2C pins available to picotool
     bi_decl(bi_2pins_with_func(PICO_DEFAULT_I2C_SDA_PIN, PICO_DEFAULT_I2C_SCL_PIN, GPIO_FUNC_I2C));
+
+    gpio_init(UNITS_PIN);
+    gpio_set_dir(UNITS_PIN, false);
+    gpio_pull_up(UNITS_PIN);
+
+    gpio_init(MODE_PIN);
+    gpio_set_dir(MODE_PIN, false);
+    gpio_pull_up(MODE_PIN);
+
+    //srand(time(NULL)); 
 }
 
 void sensor(float *temp, float *hum, bool read)
@@ -67,17 +78,15 @@ void sensor(float *temp, float *hum, bool read)
   uint8_t data_t[3];
 	uint8_t buf[8];
 
-  
-
 	data_t[0]=0x03;
 	data_t[1]=0x00;
 	data_t[2]=0x04;
     
-  i2c_write_blocking(i2c0, 0x5C, NULL, 1, false);
+  i2c_write_blocking(i2c0, AM2320_ADDR, NULL, 1, false);
   busy_wait_us(800);
-  i2c_write_blocking(i2c0, 0x5C, data_t, 3, false); //b8
+  i2c_write_blocking(i2c0, AM2320_ADDR, data_t, 3, false); //b8
   busy_wait_us(1500);
-  i2c_read_blocking(i2c0, 0x5C, buf, 8, false);//b9
+  i2c_read_blocking(i2c0, AM2320_ADDR, buf, 8, false);//b9
 
 
   if ((buf[7] << 8) + buf[6] == CRC16(buf, 6)) 
@@ -95,30 +104,12 @@ void sensor(float *temp, float *hum, bool read)
 	}
 }
 
-float dew_piont(float temp, float hum)
+float dew_point(float temp, float hum)
 {
   return pow(hum / 100.0, 1.0 / 8.0) * (112.0 + (0.9 * temp)) + (0.1 * temp) - 112.0;
 }
 
-float avg_temp(float temp)
-{
-  static float sum = 0;
-  static int count = 0;
-  sum = sum + temp;
-  count++;
-  return sum/count;
 
-}
-
-float avg_hum(float hum)
-{
-  static float sum = 0;
-  static int count = 0;
-  sum = sum + hum;
-  count++;
-  return sum/count;
-
-}
 
 void get_data(struct data *data1, float temp, float hum)
 {
@@ -161,29 +152,70 @@ void get_data(struct data *data1, float temp, float hum)
   *data1 = data_t;
 }
 
-float units(float temp, uint8_t unit)
+void units(struct data *data1, float *temp, float *dewPoint, uint8_t unit)
 { 
   switch(unit)
   {
-    case 0: //C
-      return temp;
     case 1: //F
-      return temp * 9 / 5 + 32;
+      *temp = *temp * 9 / 5 + 32;
+      data1->avg_temp = data1->avg_temp * 9 / 5 + 32;
+      data1->max_temp = data1->max_temp * 9 / 5 + 32;
+      data1->min_temp = data1->min_temp * 9 / 5 + 32;
+      *dewPoint = *dewPoint * 9 / 5 + 32;
+    break;
     case 2: //K
-      return temp + 273,15;
-    default:
-      return temp;
+      *temp = *temp + 273,15;
+      data1->avg_temp = data1->avg_temp + 273,15;
+      data1->max_temp = data1->max_temp + 273,15;
+      data1->min_temp = data1->min_temp + 273,15;
+      *dewPoint = *dewPoint + 273,15;
+    break;
+    default: //C
+      return;
   }
-
-
-
-
-
-
-
-  if(unit) //fahrenheit
-    return temp * 9 / 5 + 32;
-  
-  else //kelwin
-    return temp + 273,15;
 }
+
+uint8_t check_button()
+{
+    static bool last_units_state = 1; //nie wiem dlaczego jedynki a nie zera, ważne że działa
+    static bool last_mode_state = 1;
+    uint8_t pressed_button = 0;
+
+    if(gpio_get(UNITS_PIN) != last_units_state)
+    {
+        last_units_state = gpio_get(UNITS_PIN);
+        sleep_ms(10);
+        if(gpio_get(UNITS_PIN))
+            pressed_button = 1;
+    }
+
+    else if(gpio_get(MODE_PIN) != last_mode_state)
+    {
+        last_mode_state = gpio_get(MODE_PIN);
+        sleep_ms(10);
+        if(gpio_get(MODE_PIN))
+            pressed_button = 2;
+    }
+
+    return pressed_button;
+}
+
+// void refresh_screen(struct data *data1, float *temp, float *hum, float *dewPoint, bool mode)
+// {
+//   if(!mode) 
+//   {
+//     units(&data1, &temp, &dewPoint, unit);
+//     printf("hum: %f\n", hum);
+//     printf("temp: %f\n", temp);
+//     printf("dew point: %f\n", dewPoint);
+//     printf("=====================\n");
+//   }
+//   else 
+//   {
+//     units(&data1, &temp, &dewPoint, unit);
+//     printf("temp avg: %f\n", data1.avg_temp);
+//     printf("max temp: %f\n", data1.max_temp);
+//     printf("=====================\n");
+//   }
+
+// }
