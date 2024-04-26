@@ -1,22 +1,19 @@
 <!DOCTYPE html>
 <html>
     <head> 
-        <title>PicoW Webserver</title> 
+        <title>Termohigrometr</title> 
         <meta http-equiv="refresh" content="2" >
     </head>
-    <body> <h1>PicoW Webserver Tutorial</h1>
+    <body>
         <br>
-        <h2>This bit is SSI: DUPA</h2>
-        <p>Hum: <!--#hum--></p>
-        <p>Temp: <!--#temp--></p>
-        <p>LED is: <!--#led--></p>
-        <p>Dew point: <!--#dew--></p>
+        <p>Wilgotność: <!--#hum--></p>
+        <p>Temperatura: <!--#temp--></p>
+        <p>LED: <!--#led--></p>
+        <p>Temperatura punktu rosy: <!--#dew--></p>
         <br>
-        <h2>This bit is CGI:</h2>
         <a href="/led.cgi?led=1"><button>LED ON</button></a>
         <a href="/led.cgi?led=0"><button>LED OFF</button></a>
         <br>
         <br>
-        <a href="/index.shtml">Refresh</a>
    </body>
 </html>

@@ -1,27 +1,12 @@
-/**
-  ******************************************************************************
+#define EEPROM_ADDR 0xA0
 
-  EEPROM.h Using the HAL I2C Functions
-  Author:   ControllersTech
-  Updated:  Feb 16, 2021
+// Define the Page Size and number of pages
+#define PAGE_SIZE 8     // in Bytes
+#define PAGE_NUM  16    // number of pages
+#define PAGE_ADDRESS_START 3 //
 
-  ******************************************************************************
-  Copyright (C) 2017 ControllersTech.com
-
-  This is a free software under the GNU license, you can redistribute it and/or modify it under the terms
-  of the GNU General Public License version 3 as published by the Free Software Foundation.
-  This software library is shared with public for educational purposes, without WARRANTY and Author is not liable for any damages caused directly
-  or indirectly by this software, read more about this on the GNU General Public License.
-
-  ******************************************************************************
-*/
-
-
-
-
-void EEPROM_Write (uint16_t page, uint16_t offset, uint8_t *data, uint16_t size);
-void EEPROM_Read (uint16_t page, uint16_t offset, uint8_t *data, uint16_t size);
-void EEPROM_PageErase (uint16_t page);
-
-void EEPROM_Write_NUM (uint16_t page, uint16_t offset, float  fdata);
-float EEPROM_Read_NUM (uint16_t page, uint16_t offset);
+uint16_t bytes_to_write(uint16_t size, uint16_t offset);
+void eeprom_write_byte(uint8_t page, uint8_t offset, uint8_t *data, uint8_t size);
+uint8_t eeprom_read_byte(uint8_t page, uint8_t offset, uint8_t *data, uint8_t size);
+void float2Bytes(uint8_t *bytes_arr, float float_variable);
+float bytesToFloat(const unsigned char* byte_array);

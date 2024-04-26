@@ -59,6 +59,10 @@ void init()
     gpio_set_dir(MODE_PIN, false);
     gpio_pull_up(MODE_PIN);
 
+    gpio_init(HOLD_PIN);
+    gpio_set_dir(HOLD_PIN, false);
+    gpio_pull_up(HOLD_PIN);
+
     //srand(time(NULL)); 
 }
 
@@ -179,6 +183,7 @@ uint8_t check_button()
 {
     static bool last_units_state = 1; //nie wiem dlaczego jedynki a nie zera, ważne że działa
     static bool last_mode_state = 1;
+    static bool last_hold_state = 1;
     uint8_t pressed_button = 0;
 
     if(gpio_get(UNITS_PIN) != last_units_state)
@@ -195,6 +200,14 @@ uint8_t check_button()
         sleep_ms(10);
         if(gpio_get(MODE_PIN))
             pressed_button = 2;
+    }
+
+    else if(gpio_get(MODE_PIN) != last_hold_state)
+    {
+        last_hold_state = gpio_get(HOLD_PIN);
+        sleep_ms(10);
+        if(gpio_get(HOLD_PIN))
+            pressed_button = 3;
     }
 
     return pressed_button;

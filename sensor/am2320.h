@@ -1,3 +1,4 @@
+#define HOLD_PIN 18
 #define UNITS_PIN 20
 #define MODE_PIN 26
 #define SCL 17
