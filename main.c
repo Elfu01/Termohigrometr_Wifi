@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <time.h>
 
 #include "pico/stdlib.h"
 #include "hardware/i2c.h"
@@ -13,11 +14,12 @@
 // #include "oled/raspberry26x32.h"
 // #include "oled/ssd1306_font.h"
 #include "oled/ssd1306_i2c.c"
-
+// .
 #include "web_server/webserver_connect.c"
 
 int main()
 {
+    srand(time(NULL)); 
     stdio_init_all();
     float temp, hum, dewPoint;
     uint8_t unit = 0;
@@ -31,7 +33,9 @@ int main()
     clock_t before = clock();
     clock_t now = clock();
     float tr, hr;
-    char temp_str, hum_str;
+    char *num_str[3] = {"0", "0", "0"}; //temp, hum, dew,  
+    char disp_str[10];
+    char disp_unit[2];
     init();
 
     //gotowiec raspberry--------------------------------------------------
@@ -69,11 +73,12 @@ int main()
     sensor(&temp, &hum, 1); //musi być wykonane przed webserver_connect() bo inaczej strona chyba jebnie
     //webserver_connect();
 
-
+    //printf("przed while\n");
     while(1)
     {   
         if(now - before > 300)
         {
+            printf("w ifie czasowym\n");
             sensor(&temp, &hum, 1);
             get_data(&data1, temp, hum);
             dewPoint = dew_point(temp, hum);
@@ -83,21 +88,16 @@ int main()
                 printf("hum: %f\n", hum);
                 printf("temp: %f\n", temp);
                 printf("=====================\n");
-                text[0] = "temperature";
-                sprintf(&temp_str, "%f", temp);
-                text[1] = &temp_str;
-                //sprintf(&num_str,"0");
-                text[2] = "humidity";
-                sprintf(&hum_str, "%f", hum);
-                text[3] = &hum_str;
-                // zero the entire display
                 memset(buf, 0, SSD1306_BUF_LEN);
                 render(buf, &frame_area);
-                y = 0;
-                for (int i = 0 ;i < count_of(text); i++) {
-                    WriteString(buf, 1, y, text[i]);
-                    y+=8;
-                }
+                WriteString(buf, 1, 0, "temperature");
+                sprintf(disp_str, "%0.1f", units(temp, unit, disp_unit));
+                sprintf(disp_str + strlen(disp_str), "%s", disp_unit);
+                printf("jednostka %s\n", disp_str);
+                WriteString(buf, 1, 8, disp_str);
+                WriteString(buf, 1, 16, "humidity");
+                sprintf(disp_str, "%0.1f", hum);
+                WriteString(buf, 1, 24, disp_str);
                 render(buf, &frame_area);
             }
         }
@@ -115,17 +115,32 @@ int main()
 
                 if(mode == 0) //normalne wyswietlanie
                 {
-
-
                     printf("hum: %f\n", hum);
                     printf("temp: %f\n", temp);
                     printf("=====================\n");
+                    memset(buf, 0, SSD1306_BUF_LEN);
+                    render(buf, &frame_area);
+                    WriteString(buf, 1, 0, "temperature");
+                    sprintf(disp_str, "%0.1f", units(temp, unit, disp_unit));
+                    sprintf(disp_str + strlen(disp_str), "%s", disp_unit);
+                    printf("jednostka %s\n", disp_str);
+                    WriteString(buf, 1, 8, disp_str);
+                    WriteString(buf, 1, 16, "humidity");
+                    sprintf(disp_str, "%0.1f", hum);
+                    WriteString(buf, 1, 24, disp_str);
+                    render(buf, &frame_area);
                 }
 
                 else if(mode == 1)//punkt rosy
                 {
                     printf("dew point: %f\n", dewPoint);
                     printf("=====================\n");
+                    memset(buf, 0, SSD1306_BUF_LEN);
+                    render(buf, &frame_area);
+                    WriteString(buf, 1, 0, "dew point");
+                    sprintf(disp_str, "%0.1f", units(dewPoint, unit, disp_unit));
+                    WriteString(buf, 1, 8, disp_str);
+                    render(buf, &frame_area);
                 }
 
                 else if(mode == 2)//staty temp
@@ -134,6 +149,16 @@ int main()
                     printf("max temp: %f\n", data1.max_temp);
                     printf("min temp: %f\n", data1.min_temp);
                     printf("=====================\n");
+                    memset(buf, 0, SSD1306_BUF_LEN);
+                    render(buf, &frame_area);
+                    WriteString(buf, 1, 0, "temperature");
+                    sprintf(disp_str, "min %0.1f", units(data1.min_temp, unit, disp_unit));
+                    WriteString(buf, 1, 8, disp_str);
+                    sprintf(disp_str, "max %0.1f", units(data1.max_temp, unit, disp_unit));
+                    WriteString(buf, 1, 16, disp_str);
+                    sprintf(disp_str, "avg %0.1f", units(data1.avg_temp, unit, disp_unit));
+                    WriteString(buf, 1, 24, disp_str);
+                    render(buf, &frame_area);
                 }
 
                 else if(mode == 3)//staty hum
@@ -142,6 +167,16 @@ int main()
                     printf("max hum: %f\n", data1.max_hum);
                     printf("min hum: %f\n", data1.min_hum);
                     printf("=====================\n");
+                    memset(buf, 0, SSD1306_BUF_LEN);
+                    render(buf, &frame_area);
+                    WriteString(buf, 1, 0, "humidity");
+                    sprintf(disp_str, "min %0.1f", data1.min_hum);
+                    WriteString(buf, 1, 8, disp_str);
+                    sprintf(disp_str, "max %0.1f", data1.max_hum);
+                    WriteString(buf, 1, 16, disp_str);
+                    sprintf(disp_str, "avg %0.1f", data1.avg_hum);
+                    WriteString(buf, 1, 24, disp_str);
+                    render(buf, &frame_area);
                 }
 
                 else if(mode == 4)//hold
@@ -151,15 +186,28 @@ int main()
                     hr = bytesToFloat(&bufr[4]);
                     printf("odczytane z eeprom %f | %f\n", tr, hr);
                     printf("=====================\n");
+                    memset(buf, 0, SSD1306_BUF_LEN);
+                    render(buf, &frame_area);
+                    WriteString(buf, 1, 0, "hold");
+                    sprintf(disp_str, "temp %0.1f", units(tr, unit, disp_unit));
+                    WriteString(buf, 1, 8, disp_str);
+                    sprintf(disp_str, "humi %0.1f", hr);
+                    WriteString(buf, 1, 16, disp_str);
+                    render(buf, &frame_area);
                 }
                 
             break;
 
             case 3: //eeprom hold
+                printf("zapis do eeprom\n");
                 float2Bytes(bufw, temp);
                 float2Bytes(&bufw[4], hum);
                 eeprom_write_byte(0, 0, bufw, 8);
             break;
+
+            // default:
+
+            // break;
         }
 
         now = clock();

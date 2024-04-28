@@ -63,6 +63,9 @@ void init()
     gpio_set_dir(HOLD_PIN, false);
     gpio_pull_up(HOLD_PIN);
 
+    // gpio_pull_up(SDA);
+    // gpio_pull_up(SCL);
+
     //srand(time(NULL)); 
 }
 
@@ -156,79 +159,81 @@ void get_data(struct data *data1, float temp, float hum)
   *data1 = data_t;
 }
 
-void units(struct data *data1, float *temp, float *dewPoint, uint8_t unit)
-{ 
+// void units(struct data *data1, float *temp, float *dewPoint, uint8_t unit)
+// { 
+//   switch(unit)
+//   {
+//     case 1: //F
+//       *temp = *temp * 9 / 5 + 32;
+//       data1->avg_temp = data1->avg_temp * 9 / 5 + 32;
+//       data1->max_temp = data1->max_temp * 9 / 5 + 32;
+//       data1->min_temp = data1->min_temp * 9 / 5 + 32;
+//       *dewPoint = *dewPoint * 9 / 5 + 32;
+//     break;
+//     case 2: //K
+//       *temp = *temp + 273,15;
+//       data1->avg_temp = data1->avg_temp + 273,15;
+//       data1->max_temp = data1->max_temp + 273,15;
+//       data1->min_temp = data1->min_temp + 273,15;
+//       *dewPoint = *dewPoint + 273,15;
+//     break;
+//     default: //C
+//       return;
+//   }
+// }
+
+float units(float temp, uint8_t unit, char *disp)
+{
   switch(unit)
   {
     case 1: //F
-      *temp = *temp * 9 / 5 + 32;
-      data1->avg_temp = data1->avg_temp * 9 / 5 + 32;
-      data1->max_temp = data1->max_temp * 9 / 5 + 32;
-      data1->min_temp = data1->min_temp * 9 / 5 + 32;
-      *dewPoint = *dewPoint * 9 / 5 + 32;
-    break;
+      disp = "F";
+      return temp * 9 / 5 + 32.0;
+
     case 2: //K
-      *temp = *temp + 273,15;
-      data1->avg_temp = data1->avg_temp + 273,15;
-      data1->max_temp = data1->max_temp + 273,15;
-      data1->min_temp = data1->min_temp + 273,15;
-      *dewPoint = *dewPoint + 273,15;
-    break;
-    default: //C
-      return;
+      disp = "K";
+      return temp + 273.15;
+
+    case 3: //C
+      disp = "C";
+      return temp;
+
+    default:
+      disp = "C";
+      return temp;
   }
 }
 
 uint8_t check_button()
 {
-    static bool last_units_state = 1; //nie wiem dlaczego jedynki a nie zera, ważne że działa
-    static bool last_mode_state = 1;
-    static bool last_hold_state = 1;
-    uint8_t pressed_button = 0;
+  static bool last_units_state = 1; //nie wiem dlaczego jedynki a nie zera, ważne że działa
+  static bool last_mode_state = 1;
+  static bool last_hold_state = 1;
+  uint8_t pressed_button = 0;
 
-    if(gpio_get(UNITS_PIN) != last_units_state)
-    {
-        last_units_state = gpio_get(UNITS_PIN);
-        sleep_ms(10);
-        if(gpio_get(UNITS_PIN))
-            pressed_button = 1;
-    }
+  if(gpio_get(UNITS_PIN) != last_units_state)
+  {
+      last_units_state = gpio_get(UNITS_PIN);
+      sleep_ms(10);
+      if(gpio_get(UNITS_PIN))
+          pressed_button = 1;
+  }
 
-    else if(gpio_get(MODE_PIN) != last_mode_state)
-    {
-        last_mode_state = gpio_get(MODE_PIN);
-        sleep_ms(10);
-        if(gpio_get(MODE_PIN))
-            pressed_button = 2;
-    }
+  else if(gpio_get(MODE_PIN) != last_mode_state)
+  {
+      last_mode_state = gpio_get(MODE_PIN);
+      sleep_ms(10);
+      if(gpio_get(MODE_PIN))
+          pressed_button = 2;
+  }
 
-    else if(gpio_get(MODE_PIN) != last_hold_state)
-    {
-        last_hold_state = gpio_get(HOLD_PIN);
-        sleep_ms(10);
-        if(gpio_get(HOLD_PIN))
-            pressed_button = 3;
-    }
+  else if(gpio_get(HOLD_PIN) != last_hold_state)
+  {
+      last_hold_state = gpio_get(HOLD_PIN);
+      sleep_ms(10);
+      if(gpio_get(HOLD_PIN))
+          pressed_button = 3;
+  }
 
-    return pressed_button;
+  return pressed_button;
 }
-
-// void refresh_screen(struct data *data1, float *temp, float *hum, float *dewPoint, bool mode)
-// {
-//   if(!mode) 
-//   {
-//     units(&data1, &temp, &dewPoint, unit);
-//     printf("hum: %f\n", hum);
-//     printf("temp: %f\n", temp);
-//     printf("dew point: %f\n", dewPoint);
-//     printf("=====================\n");
-//   }
-//   else 
-//   {
-//     units(&data1, &temp, &dewPoint, unit);
-//     printf("temp avg: %f\n", data1.avg_temp);
-//     printf("max temp: %f\n", data1.max_temp);
-//     printf("=====================\n");
-//   }
-
-// }
