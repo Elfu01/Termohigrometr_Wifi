@@ -10,6 +10,7 @@
 #include "am2320.h"
 
 
+
 struct data
 {
   float max_temp;
@@ -45,7 +46,7 @@ unsigned int CRC16(uint8_t *ptr, uint8_t length)
 
 void init()
 {
-    i2c_init(i2c0, 100 * 1000);
+    i2c_init(i2c1, 100 * 1000);
     gpio_set_function(SDA, GPIO_FUNC_I2C);
     gpio_set_function(SCL, GPIO_FUNC_I2C);
         // Make the I2C pins available to picotool
@@ -89,11 +90,11 @@ void sensor(float *temp, float *hum, bool read)
 	data_t[1]=0x00;
 	data_t[2]=0x04;
     
-  i2c_write_blocking(i2c0, AM2320_ADDR, NULL, 1, false);
+  i2c_write_blocking(i2c1, AM2320_ADDR, NULL, 1, false);
   busy_wait_us(800);
-  i2c_write_blocking(i2c0, AM2320_ADDR, data_t, 3, false); //b8
+  i2c_write_blocking(i2c1, AM2320_ADDR, data_t, 3, false); //b8
   busy_wait_us(1500);
-  i2c_read_blocking(i2c0, AM2320_ADDR, buf, 8, false);//b9
+  i2c_read_blocking(i2c1, AM2320_ADDR, buf, 8, false);//b9
 
 
   if ((buf[7] << 8) + buf[6] == CRC16(buf, 6)) 
@@ -107,6 +108,7 @@ void sensor(float *temp, float *hum, bool read)
 
     temperature = *temp;
     humiditi = *hum;
+  
 
 	}
 }
@@ -159,47 +161,25 @@ void get_data(struct data *data1, float temp, float hum)
   *data1 = data_t;
 }
 
-// void units(struct data *data1, float *temp, float *dewPoint, uint8_t unit)
-// { 
-//   switch(unit)
-//   {
-//     case 1: //F
-//       *temp = *temp * 9 / 5 + 32;
-//       data1->avg_temp = data1->avg_temp * 9 / 5 + 32;
-//       data1->max_temp = data1->max_temp * 9 / 5 + 32;
-//       data1->min_temp = data1->min_temp * 9 / 5 + 32;
-//       *dewPoint = *dewPoint * 9 / 5 + 32;
-//     break;
-//     case 2: //K
-//       *temp = *temp + 273,15;
-//       data1->avg_temp = data1->avg_temp + 273,15;
-//       data1->max_temp = data1->max_temp + 273,15;
-//       data1->min_temp = data1->min_temp + 273,15;
-//       *dewPoint = *dewPoint + 273,15;
-//     break;
-//     default: //C
-//       return;
-//   }
-// }
 
 float units(float temp, uint8_t unit, char *disp)
 {
   switch(unit)
   {
     case 1: //F
-      disp = "F";
+      *disp = 'F';
       return temp * 9 / 5 + 32.0;
 
     case 2: //K
-      disp = "K";
+      *disp = 'K';
       return temp + 273.15;
 
     case 3: //C
-      disp = "C";
+      *disp = 'C';
       return temp;
 
     default:
-      disp = "C";
+      *disp = 'C';
       return temp;
   }
 }

@@ -1,19 +1,125 @@
 <!DOCTYPE html>
-<html>
-    <head> 
-        <title>Termohigrometr</title> 
-        <meta http-equiv="refresh" content="2" >
-    </head>
-    <body>
+<html lang="en">
+<head> 
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="refresh" content="2" >
+    <title>Termohigrometr</title> 
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #fff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+        }
+        p {
+            margin: 10px 0;
+            color: #666;
+        }
+        .btn-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            background-color: #007bff;
+            color: #fff;
+            text-decoration: none;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .btn:hover {
+            background-color: #0056b3;
+        }
+    </style>
+
+</head>
+<body>
+    <div class="container">
+        <h1>Termohigrometr</h1>
         <br>
-        <p>Wilgotność: <!--#hum--></p>
-        <p>Temperatura: <!--#temp--></p>
-        <p>LED: <!--#led--></p>
-        <p>Temperatura punktu rosy: <!--#dew--></p>
+        <p>Wilgotność: <p id="hum"><!--#hum--></p></p>
+        <p>Temperatura: <p id="temp"><!--#temp--></p></p>
+        <p>Temperatura punktu rosy: <span id="dew"><!--#dew--></span></p>
+        <p id="demo">maslo</p>
+        <p>Wilgotność eeprom: <p id="ehum"><!--#ehum--></p></p>
+        <p>Temperatura eeprom: <p id="etemp"><!--#etemp--></p></p>
+        <!-- <p>Max temp: <span id="maxt"><!--#maxt--></span></p>
+        <p>Min temp: <span id="mint"><!--#mint--></span></p>
+        <p>Avg temp: <span id="avgt"><!--#avgt--></span></p>
+        <p>Max hum: <span id="maxh"><!--#maxh--></span></p>
+        <p>Min hum: <span id="minh"><!--#minh--></span></p>
+        <p>Avg hum: <span id="avgh"><!--#avgh--></span></p> -->
+        
+        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+        <script type="text/javascript">
+    
+          google.charts.load('current', {'packages':['corechart']});
+          google.charts.setOnLoadCallback(drawTempChart);
+    
+          var temp = document.getElementById("temp").innerHTML;
+          var hum = document.getElementById("hum").innerHTML;
+           var tempArr = new Array(10).fill(0);
+           tempArr = localStorage.getItem("tempKey");
+          var probki = 1;
+          
+            for(i = 0; i <= 8; i++)
+            {
+                tempArr[i + 1] = tempArr[i];
+            }
+            tempArr[0] = parseFloat(temp);
+          function drawTempChart() {
+            var data1 = google.visualization.arrayToDataTable([
+              ['Próbki', 'Temperatura'],
+              ['1',  parseFloat(temp)],
+              ['2',  tempArr[1]],
+              ['3',  parseFloat(tempArr[2])],
+              ['4',  parseFloat(tempArr[3])],
+              ['5',  parseFloat(tempArr[4])],
+              ['6',  parseFloat(tempArr[5])],
+              ['7',  parseFloat(tempArr[6])],
+              ['8',  parseFloat(tempArr[7])],
+              ['9',  parseFloat(tempArr[8])],
+              ['10',  parseFloat(tempArr[9])]
+            ]);
+    
+            var options = {
+              title: 'Company Performance',
+              curveType: 'function',
+              legend: { position: 'bottom' }
+            };
+    
+            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
+    
+            chart.draw(data1, options);
+            localStorage.setItem("tempKey", temp);
+          }
+        </script>
+        
         <br>
-        <a href="/led.cgi?led=1"><button>LED ON</button></a>
-        <a href="/led.cgi?led=0"><button>LED OFF</button></a>
-        <br>
-        <br>
-   </body>
+        <div class="btn-container">
+            <a href="/led.cgi?led=1"><button>LED ON</button></a>
+            <a href="/led.cgi?led=0"><button>LED OFF</button></a>
+            <a href="/unit.cgi?unit=0"><button>c</button></a>
+            <a href="/unit.cgi?unit=1"><button>f</button></a>
+            <a href="/unit.cgi?unit=2"><button>k</button></a>
+            <a href="/eeprom.cgi?eeprom=0"><button>zapis eeprom</button></a>
+        </div>
+        <div id="curve_chart" style="width: 900px; height: 500px"></div>
+    </div>
+</body>
 </html>

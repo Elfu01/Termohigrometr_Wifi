@@ -1,9 +1,11 @@
-#define HOLD_PIN 18
-#define UNITS_PIN 20
-#define MODE_PIN 26
-#define SCL 1
-#define SDA 0
+#define HOLD_PIN 21
+#define UNITS_PIN 18
+#define MODE_PIN 16
+#define SCL 27
+#define SDA 26
 #define AM2320_ADDR 0X5C
+
+uint8_t unit;
 
 struct data;
 void init();

@@ -26,7 +26,7 @@ void eeprom_write_byte(uint8_t page, uint8_t offset, uint8_t *data, uint8_t size
         uint8_t mem_address = start_page << 3 | offset;
         data_send[pos] = mem_address;
         uint8_t bytes_remaining = bytes_to_write(size, offset);
-        i2c_write_blocking(i2c0, 0x50, &data_send[pos], bytes_remaining + 1, false);
+        i2c_write_blocking(i2c1, 0x50, &data_send[pos], bytes_remaining + 1, false);
         start_page = start_page + 1;
         offset = 0;
         size = size - bytes_remaining;
@@ -47,8 +47,8 @@ uint8_t eeprom_read_byte(uint8_t page, uint8_t offset, uint8_t *data, uint8_t si
     {
         uint8_t mem_address = start_page << 3 | offset;
         uint8_t bytes_remaining = bytes_to_write(size, offset);
-        i2c_write_blocking(i2c0, 0x50, &mem_address, 1, true);
-        i2c_read_blocking(i2c0, 0x50, &data[pos], bytes_remaining, false);
+        i2c_write_blocking(i2c1, 0x50, &mem_address, 1, true);
+        i2c_read_blocking(i2c1, 0x50, &data[pos], bytes_remaining, false);
         start_page = start_page + 1;
         offset = 0;
         size = size - bytes_remaining;
