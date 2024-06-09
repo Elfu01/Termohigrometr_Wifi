@@ -5,23 +5,29 @@
 //#include "../sensor/am2320.c"
 
 
-
-
 // SSI tags - tag length limited to 8 bytes by default
 const char * ssi_tags[] = {"hum", "temp", "led", "dew", "maxt", "mint", "avgt", "maxh", "minh", "avgh", "etemp", "ehum"};
 
-
+// struct data
+// {
+//   float max_temp;
+//   float min_temp;
+//   float max_hum;
+//   float min_hum;
+//   float avg_temp;
+//   float avg_hum;
+//   long int counter;
+//   float temp_sum;
+//   float hum_sum;
+// };
 
 u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen) 
 {
   size_t printed;
-  float temp, hum, dew;
-  struct data data1;
+  static float temp, hum, dew;
+  static struct data data1;
+  float max_temp, min_temp, avg_temp, max_hum, min_hum, avg_hum;
   char disp_unit;
-  data1.temp_sum = 0;
-  data1.hum_sum = 0;
-  data1.counter = 1;
-  get_data(&data1, temp, hum);
   switch (iIndex) 
   {
     case 0: // hum
@@ -33,7 +39,7 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
       sensor(&temp, &hum, 0);
       printed = snprintf(pcInsert, iInsertLen, "%0.1f", units(temp, unit, &disp_unit));
       if(disp_unit != 'K')
-        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", 248);
+        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%s", "&#176;");
       printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", disp_unit);
     break;
 
@@ -53,38 +59,54 @@ u16_t ssi_handler(int iIndex, char *pcInsert, int iInsertLen)
       dew = dew_point(temp, hum);
       printed = snprintf(pcInsert, iInsertLen, "%0.1f", units(dew, unit, &disp_unit));
       if(disp_unit != 'K')
-        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", 248);
+        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%s", "&#176;");
       printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", disp_unit);
     break;
 
-    // case 4: //maxt
-    //   printed = snprintf(pcInsert, iInsertLen, "%f", data1.max_temp);
-    // break;
+    case 4: //maxt
+      max_temp = get_data(&data1, temp, hum, 1);
+      //printed = snprintf(pcInsert, iInsertLen, "%f", max_temp);
+      printed = snprintf(pcInsert, iInsertLen, "%0.1f", units(max_temp, unit, &disp_unit));
+      if(disp_unit != 'K')
+        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%s", "&#176;");
+      printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", disp_unit);
+    break;
 
-    // case 5: //mint
-    //   printed = snprintf(pcInsert, iInsertLen, "%f", data1.min_temp);
-    // break;
+    case 5: //mint
+      min_temp = get_data(&data1, temp, hum, 2);
+      printed = snprintf(pcInsert, iInsertLen, "%0.1f", units(min_temp, unit, &disp_unit));
+      if(disp_unit != 'K')
+        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%s", "&#176;");
+      printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", disp_unit);
+    break;
 
-    // case 6: //avgt
-    //   printed = snprintf(pcInsert, iInsertLen, "%f", data1.avg_temp);
-    // break;
+    case 6: //avgt
+      avg_temp = get_data(&data1, temp, hum, 3);
+      printed = snprintf(pcInsert, iInsertLen, "%0.1f", units(avg_temp, unit, &disp_unit));
+      if(disp_unit != 'K')
+        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%s", "&#176;");
+      printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", disp_unit);
+    break;
 
-    // case 7: //maxh
-    //   printed = snprintf(pcInsert, iInsertLen, "%f", data1.max_hum);
-    // break;
+    case 7: //maxh
+      max_hum = get_data(&data1, temp, hum, 4);
+      printed = snprintf(pcInsert, iInsertLen, "%0.1f %%", max_hum);
+    break;
 
-    // case 8: //minh
-    //   printed = snprintf(pcInsert, iInsertLen, "%f", data1.min_hum);
-    // break;
+    case 8: //minh
+      min_hum = get_data(&data1, temp, hum, 5);
+      printed = snprintf(pcInsert, iInsertLen, "%0.1f %%", min_hum);
+    break;
 
-    // case 9: //avgh
-    //   printed = snprintf(pcInsert, iInsertLen, "%f", data1.avg_hum);
-    // break;
+    case 9: //avgh
+      avg_hum = get_data(&data1, temp, hum, 6);
+      printed = snprintf(pcInsert, iInsertLen, "%0.1f %%", avg_hum);
+    break;
 
     case 10: //etemp
       printed = snprintf(pcInsert, iInsertLen, "%0.1f", units(tr, unit, &disp_unit));
       if(disp_unit != 'K')
-        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", 248);
+        printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", "&#176;");
       printed = printed + snprintf(pcInsert + strlen(pcInsert), iInsertLen, "%c", disp_unit);
     break;
 

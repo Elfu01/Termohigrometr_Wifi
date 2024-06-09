@@ -53,6 +53,29 @@ const char * cgi_eeprom_handler(int iIndex, int iNumParams, char *pcParam[], cha
     return "/index.shtml";
 }
 
+const char * cgi_frequency_handler(int iIndex, int iNumParams, char *pcParam[], char *pcValue[])
+{
+    float temp, hum;
+    uint8_t bufw[8];
+    if (strcmp(pcParam[0] , "frequency") == 0)
+    {
+        if(strcmp(pcValue[0], "0") == 0) 
+            refresh_time = 500;
+
+        else if(strcmp(pcValue[0], "1") == 0) 
+            refresh_time = 3000;
+
+        else if(strcmp(pcValue[0], "2") == 0) 
+            refresh_time = 6000;
+
+        else if(strcmp(pcValue[0], "3") == 0) 
+            refresh_time = 10 * 6000;
+
+    }
+
+    return "/index.shtml";
+}
+
 // tCGI Struct
 // Fill this with all of the CGI requests and their respective handlers
 static const tCGI cgi_handlers[] = {
@@ -66,9 +89,12 @@ static const tCGI cgi_handlers[] = {
     {
         "/eeprom.cgi", cgi_eeprom_handler
     },
+    {
+        "/frequency.cgi", cgi_frequency_handler
+    },
 };
 
 void cgi_init(void)
 {
-    http_set_cgi_handlers(cgi_handlers, 3);
+    http_set_cgi_handlers(cgi_handlers, 4);
 }

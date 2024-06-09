@@ -9,8 +9,6 @@
 
 #include "am2320.h"
 
-
-
 struct data
 {
   float max_temp;
@@ -102,6 +100,9 @@ void sensor(float *temp, float *hum, bool read)
 	  *hum = (buf[2] << 8) + buf[3];
 		*hum = *hum / 10.0;
 
+    //z charakterystyki
+    *hum = 0.99 * *hum + 1.56;
+
     *temp = ((buf[4] & 0x7F) << 8) + buf[5];
     if((buf[4] & 0x80) == 0x80) *temp = *temp / (-10.0);
     else *temp = *temp / 10.0;
@@ -120,9 +121,36 @@ float dew_point(float temp, float hum)
 
 
 
-void get_data(struct data *data1, float temp, float hum)
+float get_data(struct data *data1, float temp, float hum, uint8_t num)
 {
-  struct data data_t;
+  static struct data data_t;
+
+  switch(num)
+  {
+    case 0:
+      break;
+    
+    case 1:
+      return data_t.max_temp;
+    
+    case 2:
+      return data_t.min_temp;
+
+    case 3:
+      return data_t.avg_temp;
+
+    case 4:
+      return data_t.max_hum;
+
+    case 5:
+      return data_t.min_hum;
+
+    case 6:
+      return data_t.avg_hum;
+
+    default:
+      break;
+  }
 
   data_t = *data1;
 
@@ -143,7 +171,7 @@ void get_data(struct data *data1, float temp, float hum)
 
     *data1 = data_t;
 
-    return;
+    return 0;
   }
 
   if(temp > data_t.max_temp)
@@ -159,6 +187,8 @@ void get_data(struct data *data1, float temp, float hum)
     data_t.min_hum = hum;
 
   *data1 = data_t;
+
+  return 0;
 }
 
 
@@ -217,3 +247,4 @@ uint8_t check_button()
 
   return pressed_button;
 }
+

@@ -36,10 +36,12 @@ int main()
     char *num_str[3] = {"0", "0", "0"}; //temp, hum, dew,  
     char disp_str[10];
     char disp_unit;
+    refresh_time = 500;
     init();
     eeprom_read_byte(0, 0, bufr, 8);
     tr = bytesToFloat(bufr);
     hr = bytesToFloat(&bufr[4]);
+    
     // sleep_ms(1000);
     //gotowiec raspberry--------------------------------------------------
     SSD1306_init();
@@ -80,10 +82,10 @@ int main()
     //printf("przed while\n");
     while(1)
     {   
-        if(now - before > 300)
+        if(now - before > refresh_time)
         {
             sensor(&temp, &hum, 1);
-            get_data(&data1, temp, hum);
+            get_data(&data1, temp, hum, 0);
             dewPoint = dew_point(temp, hum);
             before = now;
             if(mode == 0)

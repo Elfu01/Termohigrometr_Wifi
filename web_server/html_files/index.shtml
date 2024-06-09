@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="pl">
 <head> 
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta http-equiv="refresh" content="2" >
+    <meta http-equiv="refresh" content="5">
     <title>Termohigrometr</title> 
     <style>
         body {
@@ -13,26 +13,53 @@
             background-color: #f5f5f5;
         }
         .container {
-            max-width: 600px;
+            width: 90%;
+            max-width: 1200px;
             margin: 20px auto;
             padding: 20px;
-            background-color: #fff;
+            background-color: #ffffff;
             border-radius: 8px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            display: flex;
+            justify-content: space-between;
+        }
+        .section {
+            padding: 20px;
+            background-color: #ffffff;
+            color: rgb(0, 0, 0);
+            font-size: larger;
+            font-weight: bold;
+            border-radius: 8px;
+            margin: 0 10px;
+            flex: 1;
+        }
+        .left-section {
+            margin-right: 10px;
+        }
+        .right-section {
+            margin-left: 10px;
         }
         h1 {
             text-align: center;
             color: #333;
         }
-        p {
-            margin: 10px 0;
-            color: #666;
+        .chart-container {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
         }
-        .btn-container {
+        .chart {
+            width: 1000px;
+            height: 600px;
+            margin-bottom: 20px;
+        }
+        .btn-container, .frequency-container, .unit-container {
             text-align: center;
             margin-top: 20px;
         }
-        .btn {
+        .btn, .frequency-btn, .unit-btn {
             padding: 10px 20px;
             border: none;
             border-radius: 4px;
@@ -41,85 +68,149 @@
             text-decoration: none;
             cursor: pointer;
             transition: background-color 0.3s;
+            margin: 5px;
         }
-        .btn:hover {
+        .btn:hover, .frequency-btn:hover, .unit-btn:hover {
             background-color: #0056b3;
         }
+        .controls-container {
+            width: 90%;
+            max-width: 1200px;
+            text-align: center;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
     </style>
-
 </head>
 <body>
+    <h1>Termohigrometr</h1>
     <div class="container">
-        <h1>Termohigrometr</h1>
-        <br>
-        <p>Wilgotność: <p id="hum"><!--#hum--></p></p>
-        <p>Temperatura: <p id="temp"><!--#temp--></p></p>
-        <p>Temperatura punktu rosy: <span id="dew"><!--#dew--></span></p>
-        <p id="demo">maslo</p>
-        <p>Wilgotność eeprom: <p id="ehum"><!--#ehum--></p></p>
-        <p>Temperatura eeprom: <p id="etemp"><!--#etemp--></p></p>
-        <!-- <p>Max temp: <span id="maxt"><!--#maxt--></span></p>
-        <p>Min temp: <span id="mint"><!--#mint--></span></p>
-        <p>Avg temp: <span id="avgt"><!--#avgt--></span></p>
-        <p>Max hum: <span id="maxh"><!--#maxh--></span></p>
-        <p>Min hum: <span id="minh"><!--#minh--></span></p>
-        <p>Avg hum: <span id="avgh"><!--#avgh--></span></p> -->
+        <div class="section left-section">
+            <p>Wilgotność: <span id="hum"><!--#hum--></span></p>
+            <p>Temperatura: <span id="temp"><!--#temp--></span></p>
+            <p>Temperatura punktu rosy: <span id="dew"><!--#dew--></span></p>
+        </div>
+        <div class="section right-section">
+            <p>Max temp: <span id="maxt"><!--#maxt--></span></p>
+            <p>Min temp: <span id="mint"><!--#mint--></span></p>
+            <p>Avg temp: <span id="avgt"><!--#avgt--></span></p>
+            <p>Max hum: <span id="maxh"><!--#maxh--></span></p>
+            <p>Min hum: <span id="minh"><!--#minh--></span></p>
+            <p>Avg hum: <span id="avgh"><!--#avgh--></span></p>
+        </div>
+    </div>
+    <div class="controls-container">
+        <div class="btn-container">
+            <h2>Lampa LED</h2>
+            <a href="/led.cgi?led=1"><button class="btn">LED ON</button></a>
+            <a href="/led.cgi?led=0"><button class="btn">LED OFF</button></a>
+        </div>
+        <div class="frequency-container">
+            <h2>Zmiana częstotliwości pomiaru</h2>
+            <a href="/frequency.cgi?frequency=0"><button class="frequency-btn">5s</button></a>
+            <a href="/frequency.cgi?frequency=1"><button class="frequency-btn">30s</button></a>
+            <a href="/frequency.cgi?frequency=2"><button class="frequency-btn">60s</button></a>
+            <a href="/frequency.cgi?frequency=3"><button class="frequency-btn">10 min</button></a>
+        </div>
+        <h2>Zmiana jednostki</h2>
+        <div class="unit-container">
+            <a href="/unit.cgi?unit=0"><button id="unitChange1" class="unit-btn" onclick="resetTempArray()">C</button></a>
+            <a href="/unit.cgi?unit=1"><button id="unitChange2" class="unit-btn" onclick="resetTempArray()">F</button></a>
+            <a href="/unit.cgi?unit=2"><button id="unitChange3" class="unit-btn" onclick="resetTempArray()">K</button></a>
+        </div>
+    </div>
+    <div class="chart-container">
+        <div id="curve_chart1" class="chart"></div>
+        <div id="curve_chart2" class="chart"></div>
+    </div>
+    <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
+    <script type="text/javascript">
+        // Funkcja do zapisywania tablicy do localStorage
+        function saveTempArray(array) {
+            localStorage.setItem('myTempArray', JSON.stringify(array));
+        }
+
+        // Funkcja do odczytywania tablicy z localStorage
+        function loadTempArray() {
+            const array = localStorage.getItem('myTempArray');
+            return array ? JSON.parse(array) : [];
+        }
+
+        function saveHumArray(array) {
+            localStorage.setItem('myHumArray', JSON.stringify(array));
+        }
+
+        function loadHumArray() {
+            const array = localStorage.getItem('myHumArray');
+            return array ? JSON.parse(array) : [];
+        }
+
+        // Funkcja do resetowania tablicy w localStorage
+        function resetTempArray() {
+            localStorage.removeItem('myTempArray');
+            // Opcjonalnie możesz wykonać jakieś dodatkowe czynności, np. zaktualizować widok
+            // na stronie, jeśli to konieczne.
+        }
+
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawTempChart);
         
-        <script type="text/javascript" src="https://www.gstatic.com/charts/loader.js"></script>
-        <script type="text/javascript">
-    
-          google.charts.load('current', {'packages':['corechart']});
-          google.charts.setOnLoadCallback(drawTempChart);
-    
-          var temp = document.getElementById("temp").innerHTML;
-          var hum = document.getElementById("hum").innerHTML;
-           var tempArr = new Array(10).fill(0);
-           tempArr = localStorage.getItem("tempKey");
-          var probki = 1;
-          
-            for(i = 0; i <= 8; i++)
-            {
+        function drawTempChart() {
+            var temp = document.getElementById("temp").innerHTML;
+            let tempArr = loadTempArray();
+
+            for (let i = 20; i >= 0; i--) {
                 tempArr[i + 1] = tempArr[i];
             }
             tempArr[0] = parseFloat(temp);
-          function drawTempChart() {
-            var data1 = google.visualization.arrayToDataTable([
-              ['Próbki', 'Temperatura'],
-              ['1',  parseFloat(temp)],
-              ['2',  tempArr[1]],
-              ['3',  parseFloat(tempArr[2])],
-              ['4',  parseFloat(tempArr[3])],
-              ['5',  parseFloat(tempArr[4])],
-              ['6',  parseFloat(tempArr[5])],
-              ['7',  parseFloat(tempArr[6])],
-              ['8',  parseFloat(tempArr[7])],
-              ['9',  parseFloat(tempArr[8])],
-              ['10',  parseFloat(tempArr[9])]
-            ]);
-    
+
+            let dataTable1 = [[' ', 'Temperatura']];
+            for (let i = 0; i < tempArr.length; i++) {
+                dataTable1.push([' ', parseFloat(tempArr[tempArr.length - 1 - i])]);
+            }
+
+            var data1 = google.visualization.arrayToDataTable(dataTable1);
             var options = {
-              title: 'Company Performance',
-              curveType: 'function',
-              legend: { position: 'bottom' }
+                legend: { position: 'bottom' },
+                vAxis: { viewWindow: { min: 0 } },
+                hAxis: { gridlines: { count: -1 }, ticks: [] }
             };
-    
-            var chart = new google.visualization.LineChart(document.getElementById('curve_chart'));
-    
-            chart.draw(data1, options);
-            localStorage.setItem("tempKey", temp);
-          }
-        </script>
+
+            var chart1 = new google.visualization.LineChart(document.getElementById('curve_chart1'));
+            chart1.draw(data1, options);
+            saveTempArray(tempArr);
+        }
         
-        <br>
-        <div class="btn-container">
-            <a href="/led.cgi?led=1"><button>LED ON</button></a>
-            <a href="/led.cgi?led=0"><button>LED OFF</button></a>
-            <a href="/unit.cgi?unit=0"><button>c</button></a>
-            <a href="/unit.cgi?unit=1"><button>f</button></a>
-            <a href="/unit.cgi?unit=2"><button>k</button></a>
-            <a href="/eeprom.cgi?eeprom=0"><button>zapis eeprom</button></a>
-        </div>
-        <div id="curve_chart" style="width: 900px; height: 500px"></div>
-    </div>
+        google.charts.load('current', {'packages':['corechart']});
+        google.charts.setOnLoadCallback(drawHumChart);
+        function drawHumChart() {
+            var hum = document.getElementById("hum").innerHTML;
+            let humArr = loadHumArray();
+
+            for (let i = 20; i >= 0; i--) {
+                humArr[i + 1] = humArr[i];
+            }
+            humArr[0] = parseFloat(hum);
+
+            let dataTable2 = [[' ', 'Wilgotność']];
+            for (let i = 0; i < humArr.length; i++) {
+                dataTable2.push([' ', parseFloat(humArr[humArr.length - 1 - i])]);
+            }
+
+            var data2 = google.visualization.arrayToDataTable(dataTable2);
+            var options = {
+                legend: { position: 'bottom' },
+                vAxis: { viewWindow: { min: 0 } },
+                hAxis: { gridlines: { count: -1 }, ticks: [] }
+            };
+
+            var chart2 = new google.visualization.LineChart(document.getElementById('curve_chart2'));
+            chart2.draw(data2, options);
+            saveHumArray(humArr);
+        }
+    </script>
 </body>
 </html>
